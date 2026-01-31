@@ -1,0 +1,203 @@
+{
+  "name": "6 physio appointment",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nThis is Dr.Strange clinic.How can I help you today",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3a0d412f-45d6-42d1-9dd5-c61213ef6eb4",
+      "name": "When chat message received",
+      "webhookId": "d89bd7c9-d361-491b-b3bb-1af3a2e92228"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=#Role\nyou're a smart and helpful receptionist agent for Dr Nihal physiotherapy clinic.\n\nHow to behave / What to do\n\nAlways greet the patients with the message, \"Welcome to Dr Strange's clinic. How can I help you?\"\n\n- The patients will try to schedule an appointment with Dr Strange. You have to check for the free slots on Dr Strange's calendar using tools and suggest the patient with the available time slots for the requested date.\n\nOnce they confirm the slot, you have to block the calendar using tools.\n\n# Tools available\n\n- create new events: Use this tool to block the calendar.\n\nBefore blocking the calendar, use the 'get events' tool to check for available slots.\n\nget events: Use this tool to look for the events on the calendar. This will give you an idea of the available slots.\n\n# Tone\n\nBe professional, polite, caring.\n\nImportant information\n\nCurrent date and time: {{ $now }}\n\nThe working timings are 9 am to 6 pm. If the patient is asking for a slot before 9 am or after 6 pm, tell them to book the slot for another day.\n\nDon't give slots for a Sunday and public holiday's.\n\nDon't give any slots between 1 pri to 2 pm because this is Doctors  lunch time .\n\n-block the slots for 30 min only . Dont give more time than that\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6ab766bb-db6a-4426-83f2-c3154117b980",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        224
+      ],
+      "id": "0d731785-db6e-48d2-8f9e-abf9ed777a71",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "g7lipcgxgudlT47A",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        224
+      ],
+      "id": "e07eb60d-97e9-4c98-8fcf-6a41d095478a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "nihalnampally@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nihalnampally@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        208
+      ],
+      "id": "3d4d53be-dcfc-49f9-a6cd-1bdeeb23633f",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "xKcXQhrNnDm7RhLy",
+          "name": "Google Calendar account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "nihalnampally@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nihalnampally@gmail.com"
+        },
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        144
+      ],
+      "id": "6606f199-ff4f-4e61-8618-a9d5861bd777",
+      "name": "get events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "xKcXQhrNnDm7RhLy",
+          "name": "Google Calendar account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f4face16-aae8-48b3-b238-6b6dccf77c51",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "50e181c567c14e6d20bb5c3d6416cf01506a1d3546c8826eed2c020ca985d4e1"
+  },
+  "id": "IV47IjTUiXlOAn3YMRZcO",
+  "tags": []
+}
